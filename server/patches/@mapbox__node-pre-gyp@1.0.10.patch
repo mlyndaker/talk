@@ -1,0 +1,36 @@
+--- a/lib/util/compile.js
++++ b/lib/util/compile.js
+@@ -17,16 +17,6 @@
+ */
+ function which_node_gyp() {
+   let node_gyp_bin;
+-  if (process.env.npm_config_node_gyp) {
+-    try {
+-      node_gyp_bin = process.env.npm_config_node_gyp;
+-      if (existsSync(node_gyp_bin)) {
+-        return node_gyp_bin;
+-      }
+-    } catch (err) {
+-      // do nothing
+-    }
+-  }
+   try {
+     const node_gyp_main = require.resolve('node-gyp'); // eslint-disable-line node/no-missing-require
+     node_gyp_bin = path.join(path.dirname(
+@@ -38,6 +28,16 @@
+   } catch (err) {
+     // do nothing
+   }
++  if (process.env.npm_config_node_gyp) {
++    try {
++      node_gyp_bin = process.env.npm_config_node_gyp;
++      if (existsSync(node_gyp_bin)) {
++        return node_gyp_bin;
++      }
++    } catch (err) {
++      // do nothing
++    }
++  }
+   if (process.execPath.indexOf('iojs') === -1) {
+     try {
+       const npm_main = require.resolve('npm'); // eslint-disable-line node/no-missing-require
