@@ -44,5 +44,10 @@
     "ts-node": "^9.1.1",
     "typescript": "^3.9.5",
     "url-regex-safe": "^2.0.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "re2": "1.27.0"
+    }
   }
 }

@@ -1,0 +1,11 @@
+--- a/lib/index.js
++++ b/lib/index.js
+@@ -74,7 +74,7 @@
+         switch (_b.label) {
+             case 0:
+                 mergedOptions = __assign({}, types_1.defaultOptions, options);
+-                if (!util_1.isString(schema)) return [3 /*break*/, 8];
++                if (!(typeof schema === "string")) return [3 /*break*/, 8];
+                 _b.label = 1;
+             case 1:
+                 _b.trys.push([1, 4, , 5]);
