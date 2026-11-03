@@ -1,15 +1,15 @@
 const { generateTSTypesAsString } = require("graphql-schema-typescript");
-const { loadConfigSync } = require("graphql-config");
 const path = require("path");
 const fs = require("fs");
 
 async function main() {
-  const config = loadConfigSync({});
-  const projects = config.projects;
+  const schema = path.join(
+    __dirname,
+    "../src/core/server/graph/schema/schema.graphql"
+  );
 
   const files = [
     {
-      name: "tenant",
       fileName: path.join(
         __dirname,
         "../src/core/server/graph/schema/__generated__/types.ts"
@@ -24,7 +24,6 @@ async function main() {
       },
     },
     {
-      name: "tenant",
       fileName: path.join(
         __dirname,
         "../../client",
@@ -38,25 +37,6 @@ async function main() {
   ];
 
   for (const file of files) {
-    // Load the graph schema.
-    const schemaConfig = projects[file.name].schema;
-
-    if (!schemaConfig) {
-      // eslint-disable-next-line no-console
-      console.error(
-        `SchemaPath for project ${program.schema} not found in graphql config`
-      );
-      process.exit(1);
-    }
-
-    if (schemaConfig.length > 1) {
-      // eslint-disable-next-line no-console
-      console.error(`Multiple schemas provided, but we expected only one`);
-      process.exit(1);
-    }
-
-    const schema = schemaConfig[0];
-
     // Create the generated directory.
     const dir = path.dirname(file.fileName);
     if (!fs.existsSync(dir)) {

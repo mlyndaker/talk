@@ -1,8 +1,8 @@
-import { attachDirectiveResolvers } from "@graphql-tools/schema";
-import { IResolvers, SchemaDirectiveVisitor } from "@graphql-tools/utils";
+import { IResolvers } from "@graphql-tools/utils";
 
+import attachDirectiveResolvers from "coral-server/graph/directives/attachDirectiveResolvers";
 import auth from "coral-server/graph/directives/auth";
-import constraint from "coral-server/graph/directives/constraint";
+import applyConstraintDirective from "coral-server/graph/directives/constraint";
 import rate from "coral-server/graph/directives/rate";
 import resolvers from "coral-server/graph/resolvers";
 
@@ -16,9 +16,7 @@ export default function getSchema() {
   schema = attachDirectiveResolvers(schema, { auth, rate });
 
   // Attach the constraint directive.
-  SchemaDirectiveVisitor.visitSchemaDirectives(schema, {
-    constraint,
-  });
+  schema = applyConstraintDirective(schema);
 
   return schema;
 }
