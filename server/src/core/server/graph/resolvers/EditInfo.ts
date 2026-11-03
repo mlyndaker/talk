@@ -1,5 +1,3 @@
-import { CacheScope } from "apollo-cache-control";
-
 import {
   GQLEditInfo,
   GQLEditInfoTypeResolver,
@@ -13,7 +11,7 @@ export const EditInfo: GQLEditInfoTypeResolver<GQLEditInfo> = {
       return null;
     }
 
-    setCacheHint(info, { scope: CacheScope.Private });
+    setCacheHint(info, { scope: "PRIVATE" });
 
     return editableUntil;
   },

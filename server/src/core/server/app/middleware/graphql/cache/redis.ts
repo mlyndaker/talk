@@ -1,4 +1,7 @@
-import { KeyValueCache, KeyValueCacheSetOptions } from "apollo-server-caching";
+import {
+  KeyValueCache,
+  KeyValueCacheSetOptions,
+} from "@apollo/utils.keyvaluecache";
 import DataLoader from "dataloader";
 import { Redis } from "ioredis";
 

@@ -1,6 +1,9 @@
-import { ApolloServer } from "apollo-server-express";
-import { ApolloServerPlugin } from "apollo-server-plugin-base";
-import ResponseCachePlugin from "apollo-server-plugin-response-cache";
+import { ApolloServer, ApolloServerPlugin } from "@apollo/server";
+import ResponseCachePlugin from "@apollo/server-plugin-response-cache";
+import { ApolloServerPluginCacheControl } from "@apollo/server/plugin/cacheControl";
+import { ApolloServerPluginCacheControlDisabled } from "@apollo/server/plugin/disabled";
+import { expressMiddleware } from "@as-integrations/express4";
+import { RequestHandler, Router } from "express";
 
 import { CLIENT_ID_HEADER } from "coral-common/common/lib/constants";
 import { AppOptions } from "coral-server/app";
@@ -11,6 +14,7 @@ import {
   LoggerApolloServerPlugin,
   MetricsApolloServerPlugin,
 } from "coral-server/graph/plugins";
+import rootLogger from "coral-server/logger";
 import { Request, TenantCoralRequest } from "coral-server/types/express";
 
 import { RedisCache } from "./cache/redis";
@@ -18,7 +22,7 @@ import { RedisCache } from "./cache/redis";
 type ContextProviderOptions = Omit<AppOptions, "schema" | "metrics">;
 
 function contextProvider(options: ContextProviderOptions) {
-  return ({ req }: { req: Request<TenantCoralRequest> }) => {
+  return async ({ req }: { req: Request<TenantCoralRequest> }) => {
     // Grab the details from the Coral request.
     const { id, now, tenant, site, logger, persisted } = req.coral;
 
@@ -56,97 +60,67 @@ export const apolloGraphQLMiddleware = ({
   metrics,
   ...options
 }: AppOptions) => {
-  // Optionally add `Cache-Control` headers to GraphQL responses.
-  let cacheControl:
-    | {
-        defaultMaxAge: number;
-      }
-    | boolean = false;
-  if (options.config.get("graphql_cache_headers")) {
-    cacheControl = {
-      defaultMaxAge: Math.floor(
-        options.config.get("default_graphql_cache_max_age") / 1000
-      ),
-    };
-  }
-
-  const plugins: ApolloServerPlugin[] = [
+  const plugins: Array<ApolloServerPlugin<GraphContext>> = [
     ErrorApolloServerPlugin,
     LoggerApolloServerPlugin,
     MetricsApolloServerPlugin(metrics),
     CommentSeenServerPlugin,
   ];
 
-  // Optionally cache GraphQL responses in Redis. Will only enable if headers
-  // are also enabled.
-  if (
-    options.config.get("graphql_response_cache") &&
-    options.config.get("graphql_cache_headers")
-  ) {
+  // Cache headers are only calculated when enabled.
+  if (options.config.get("graphql_cache_headers")) {
     plugins.push(
-      ResponseCachePlugin({
-        // Each user will share the same cache.
-        sessionId: ({ context }) => (context.user ? context.user.id : null),
-        cache: new RedisCache(options.redis),
+      ApolloServerPluginCacheControl({
+        defaultMaxAge: Math.floor(
+          options.config.get("default_graphql_cache_max_age") / 1000
+        ),
       })
     );
+
+    if (options.config.get("graphql_response_cache")) {
+      plugins.push(
+        ResponseCachePlugin<GraphContext>({
+          sessionId: async ({ contextValue }) =>
+            contextValue.user ? contextValue.user.id : null,
+          cache: new RedisCache(options.redis),
+        })
+      );
+    }
+  } else {
+    plugins.push(ApolloServerPluginCacheControlDisabled());
   }
 
-  // Create the ApolloServer that we'll use to get the middleware from.
-  const server = new ApolloServer({
-    // Provide the executable schema that we assembled earlier.
+  const server = new ApolloServer<GraphContext>({
     schema,
-
-    // Create the context provider that'll create a new context for each
-    // request.
-    context: contextProvider(options),
-
-    // Introspection is enabled when we aren't in a production environment or if
-    // the GraphiQL is enabled.
     introspection:
       options.config.get("env") !== "production" ||
       options.config.get("enable_graphiql"),
-
-    // Disable uploads, Coral doesn't handle any file uploads.
-    uploads: false,
-
-    // Disable the embedded playground, Coral provides it's own GraphiQL
-    // interface.
-    playground: false,
-
-    // Disable engine, Coral doesn't use it.
-    engine: false,
-
-    // Configure optional cache control headers.
-    cacheControl,
-
-    // Disable subscriptions as we'll be providing it separately.
-    subscriptions: false,
-
-    // Disable automated persisted queries as Coral will provide it's own
-    // implementation at the Express level.
     persistedQueries: false,
-
-    // Configure plugins to be ran on requests.
+    // CORS and authentication are handled by the preceding middleware.
+    csrfPrevention: false,
+    includeStacktraceInErrorResponses: false,
     plugins,
-
-    // Disable the debug mode, as we already add in our logging function.
-    debug: false,
   });
 
-  // Get the GraphQL middleware.
-  return server.getMiddleware({
-    // Disable the health check endpoint, Coral does not use this endpoint and
-    // instead uses the /api/health endpoint.
-    disableHealthCheck: true,
+  const context = contextProvider(options);
 
-    // CORS is not enabled here, but in a different middleware that comes before this.
-    cors: false,
-
-    // Disable the body parser, we will add our own.
-    bodyParserConfig: false,
-
-    // Configure the path.
-    path: "/graphql",
+  // The server must be started before the middleware can handle requests.
+  const ready = server.start().then(() =>
+    expressMiddleware(server, {
+      context: ({ req }) =>
+        context({ req: req as Request<TenantCoralRequest> }),
+    })
+  );
+  ready.catch((err) => {
+    rootLogger.error({ err }, "could not start the graphql server");
   });
+
+  const handler: RequestHandler = (req, res, next) => {
+    ready.then((middleware) => middleware(req, res, next), next);
+  };
+
+  const router = Router();
+  router.use("/graphql", handler);
+
+  return router;
 };

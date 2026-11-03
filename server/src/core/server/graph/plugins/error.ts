@@ -1,18 +1,19 @@
-import { ApolloServerPlugin } from "apollo-server-plugin-base";
+import { ApolloServerPlugin } from "@apollo/server";
 
 import GraphContext from "../context";
-import { enrichError } from "./helpers";
+import { enrichError, getFormattedErrors } from "./helpers";
 
 export const ErrorApolloServerPlugin: ApolloServerPlugin<GraphContext> = {
-  requestDidStart() {
+  async requestDidStart() {
     return {
-      willSendResponse({ response, context }) {
+      async willSendResponse(requestContext) {
+        const { contextValue: context } = requestContext;
+        const errors = getFormattedErrors(requestContext);
+
         // If there's any errors on the response, we need to enrich their
         // extensions with translated messages.
-        if (response.errors) {
-          response.errors = response.errors.map((err) =>
-            enrichError(context, err)
-          );
+        if (errors) {
+          errors.forEach((err) => enrichError(context, err));
         }
       },
     };

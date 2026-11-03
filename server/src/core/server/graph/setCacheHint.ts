@@ -1,11 +1,15 @@
-import { CacheHint, CacheScope } from "apollo-cache-control";
+import {
+  CacheHint,
+  maybeCacheControlFromInfo,
+} from "@apollo/cache-control-types";
 import { GraphQLResolveInfo } from "graphql";
 
 export function setCacheHint(
   info: GraphQLResolveInfo,
-  cacheHint: CacheHint = { scope: CacheScope.Private }
+  cacheHint: CacheHint = { scope: "PRIVATE" }
 ) {
-  if (info.cacheControl) {
-    info.cacheControl.setCacheHint(cacheHint);
+  const cacheControl = maybeCacheControlFromInfo(info);
+  if (cacheControl) {
+    cacheControl.setCacheHint(cacheHint);
   }
 }

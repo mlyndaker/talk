@@ -1,4 +1,3 @@
-import { CacheScope } from "apollo-cache-control";
 import { GraphQLResolveInfo } from "graphql";
 import { defaultTo } from "lodash";
 
@@ -233,7 +232,7 @@ export const Comment: GQLCommentTypeResolver<comment.Comment> = {
       return null;
     }
 
-    setCacheHint(info, { scope: CacheScope.Private });
+    setCacheHint(info, { scope: "PRIVATE" });
 
     const story = await ctx.loaders.Stories.find.load({ id: c.storyID });
     if (!story) {

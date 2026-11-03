@@ -1,6 +1,7 @@
-import { ApolloError } from "apollo-server-express";
+import { GraphQLRequestContextWillSendResponse } from "@apollo/server";
 import {
   DocumentNode,
+  GraphQLError,
   GraphQLFormattedError,
   OperationDefinitionNode,
   OperationTypeNode,
@@ -76,6 +77,34 @@ export const getPersistedQueryMetadata = ({
 });
 
 /**
+ * getFormattedErrors returns the formatted errors that will be sent in the
+ * response, with the original error from the matching GraphQLError attached
+ * as a non-enumerable `originalError` so it isn't serialized.
+ * @param requestContext the request context of the response being sent
+ */
+export function getFormattedErrors(
+  requestContext: GraphQLRequestContextWillSendResponse<GraphContext>
+): GraphQLFormattedError[] | undefined {
+  const { body } = requestContext.response;
+  if (body.kind !== "single" || !body.singleResult.errors) {
+    return;
+  }
+
+  const errors = body.singleResult.errors as GraphQLFormattedError[];
+  errors.forEach((err, index) => {
+    const originalError = requestContext.errors?.[index]?.originalError;
+    if (originalError && !(err as any).originalError) {
+      Object.defineProperty(err, "originalError", {
+        value: originalError,
+        enumerable: false,
+      });
+    }
+  });
+
+  return errors;
+}
+
+/**
  * getOriginalError tries to return the original error from a
  * formatted GraphQL error.
  * @param err A GraphQL Formatted Error
@@ -122,16 +151,16 @@ export function getWrappedOriginalError(
   err: GraphQLFormattedError,
   ctx?: GraphContext
 ): CoralError | undefined {
-  if (err instanceof ApolloError) {
-    // ApolloError's don't need to be hoisted as they contain validation
-    // messages about the graph.
-    return;
-  }
-
   const originalError = getOriginalError(err);
 
   if (!originalError) {
     // Only errors that have an originalError need to be hoisted.
+    return;
+  }
+
+  if (originalError instanceof GraphQLError) {
+    // Errors that wrap a GraphQLError (parse or validation errors) don't need
+    // to be hoisted as they contain validation messages about the graph.
     return;
   }
 

@@ -1,4 +1,4 @@
-import { CacheHint, CacheScope } from "apollo-cache-control";
+import { CacheHint } from "@apollo/cache-control-types";
 import { GraphQLResolveInfo } from "graphql";
 import graphqlFields from "graphql-fields";
 import { pull } from "lodash";
@@ -24,7 +24,7 @@ export function reconstructTenantURLResolver<T = any>(path: string) {
 export async function setCacheHintWhenTruthy<T>(
   promise: Promise<T> | T,
   info: GraphQLResolveInfo,
-  cacheHint: CacheHint = { scope: CacheScope.Private }
+  cacheHint: CacheHint = { scope: "PRIVATE" }
 ) {
   const value = await Promise.resolve(promise);
   if (!value) {
