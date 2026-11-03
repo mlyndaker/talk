@@ -11,7 +11,7 @@ import {
   ErrorReporterScope,
   User,
 } from "../reporter";
-import { FakeDebugTransport } from "./fakeDebugTransport";
+import { makeFakeDebugTransport } from "./fakeDebugTransport";
 
 declare const __webpack_public_path__: string;
 
@@ -68,7 +68,7 @@ export class SentryErrorReporter implements ErrorReporter {
       dsn,
       release: `coral@${process.env.TALK_VERSION}`,
       debug: Boolean(options.offlineDebug),
-      transport: options.offlineDebug ? FakeDebugTransport : undefined,
+      transport: options.offlineDebug ? makeFakeDebugTransport : undefined,
       allowUrls: whitelistUrls,
       sampleRate: 0.2,
       beforeSend: (event) => {

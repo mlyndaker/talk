@@ -1,5 +1,5 @@
 import cn from "classnames";
-import marked from "marked";
+import { marked } from "marked";
 import React, { AllHTMLAttributes, PureComponent } from "react";
 
 import styles from "./Markdown.css";

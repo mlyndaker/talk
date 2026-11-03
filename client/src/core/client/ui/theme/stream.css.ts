@@ -9,11 +9,14 @@ import flat from "flat";
 import fs from "fs";
 import { kebabCase, mapKeys, mapValues } from "lodash";
 import path from "path";
-import postcss from "postcss";
 import postcssJs from "postcss-js";
 
 import breakpoints from "./breakpoints";
 import streamVariables from "./streamVariables";
+
+// postcss >= 8.4 typings can't be loaded by TypeScript 3.9.
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const postcss: { parse(css: string): unknown } = require("postcss");
 
 const flatKebabVariables = mapKeys(
   mapValues(flat(streamVariables, { delimiter: "-" }), (v) => v.toString()),

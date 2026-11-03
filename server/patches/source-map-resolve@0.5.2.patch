@@ -1,0 +1,12 @@
+diff --git a/lib/decode-uri-component.js b/lib/decode-uri-component.js
+index c7064ff4ddc60823343f9f5727efa66b3b93f730..0c27ce5216c074dc3db2d271aba1d3ccc5c70200 100644
+--- a/lib/decode-uri-component.js
++++ b/lib/decode-uri-component.js
+@@ -2,6 +2,7 @@
+ // X11 (“MIT”) Licensed. (See LICENSE.)
+ 
+ var decodeUriComponent = require("decode-uri-component")
++decodeUriComponent = decodeUriComponent.default || decodeUriComponent
+ 
+ function customDecodeUriComponent(string) {
+   // `decodeUriComponent` turns `+` into ` `, but that's not wanted.
