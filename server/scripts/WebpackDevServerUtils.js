@@ -19,7 +19,6 @@ const url = require("url");
 const chalk = require("chalk");
 const clearConsole = require("react-dev-utils/clearConsole");
 const formatWebpackMessages = require("react-dev-utils/formatWebpackMessages");
-const typescriptFormatter = require("react-dev-utils/typescriptFormatter");
 const forkTsCheckerWebpackPlugin = require("react-dev-utils/ForkTsCheckerWebpackPlugin");
 
 // (cvle): Changed to false as we are sharing the tty with other processes.
@@ -169,8 +168,7 @@ function createCompiler({
         (diagnostics, lints) => {
           console.log("RECEIVED");
           const allMsgs = [...diagnostics, ...lints];
-          const format = (message) =>
-            `${message.file}\n${typescriptFormatter(message, true)}`;
+          const format = (message) => `${message.file}\n${message.message}`;
 
           tsMessagesResolver({
             errors: allMsgs

@@ -120,10 +120,11 @@ exports.onCreateWebpackConfig = ({
                 {
                   loader: require.resolve("postcss-loader"),
                   options: {
-                    config: {
-                      path: postCSSConfigPath,
+                    execute: true,
+                    postcssOptions: {
+                      config: postCSSConfigPath,
+                      parser: "postcss-js",
                     },
-                    parser: "postcss-js",
                   },
                 },
                 {
@@ -163,8 +164,8 @@ exports.onCreateWebpackConfig = ({
                 {
                   loader: require.resolve("postcss-loader"),
                   options: {
-                    config: {
-                      path: postCSSConfigPath,
+                    postcssOptions: {
+                      config: postCSSConfigPath,
                     },
                   },
                 },

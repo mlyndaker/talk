@@ -16,6 +16,7 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "preserveSymlinks": true,
+    "baseUrl": "./src/types/shims",
     "lib": ["dom", "es6", "esnext.asynciterable"],
     "plugins": [
       {
