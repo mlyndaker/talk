@@ -1,5 +1,4 @@
-import { DirectiveResolverFn } from "@graphql-tools/utils";
-import { CacheScope } from "apollo-cache-control";
+import { DirectiveResolverFn } from "coral-server/graph/directives/types";
 import { memoize } from "lodash";
 
 import {
@@ -89,7 +88,7 @@ const auth: DirectiveResolverFn<
     (roles.includes(GQLUSER_ROLE.ADMIN) ||
       roles.includes(GQLUSER_ROLE.MODERATOR))
   ) {
-    setCacheHint(info, { scope: CacheScope.Private });
+    setCacheHint(info, { scope: "PRIVATE" });
   }
 
   // If there is a user on the request.

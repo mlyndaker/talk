@@ -1,14 +1,31 @@
-import { addResolversToSchema } from "@graphql-tools/schema";
-import { IResolvers, IResolverValidationOptions } from "@graphql-tools/utils";
-import { loadConfigSync } from "graphql-config";
+import fs from "fs";
+import { buildSchema } from "graphql";
+import path from "path";
+
+import {
+  addResolversToSchema,
+  IResolvers,
+  IResolverValidationOptions,
+} from "./graphqlTools";
 
 export function loadSchema(
   resolvers: IResolvers,
   options?: IResolverValidationOptions
 ) {
-  // Load the configuration from the provided `graphql-config` configuration file.
-  const schema = loadConfigSync({}).getProject("tenant").getSchemaSync();
+  const schema = buildSchema(
+    fs.readFileSync(
+      path.join(
+        __dirname,
+        "../../../../../../server/src/core/server/graph/schema/schema.graphql"
+      ),
+      "utf8"
+    )
+  );
 
   // Attach the resolvers to the schema.
-  return addResolversToSchema(schema, resolvers, options);
+  return addResolversToSchema({
+    schema,
+    resolvers,
+    resolverValidationOptions: options,
+  });
 }

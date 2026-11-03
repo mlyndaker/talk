@@ -1,6 +1,6 @@
 import { Redis } from "ioredis";
 import { isEmpty } from "lodash";
-import uuid from "uuid/v4";
+import { v4 as uuid } from "uuid";
 
 import { MongoContext } from "coral-server/data/context";
 import { dotize } from "coral-server/utils/dotize";

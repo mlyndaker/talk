@@ -433,8 +433,40 @@ export function createSubscriptionServer(
   return SubscriptionServer.create(
     {
       schema,
-      execute,
-      subscribe,
+      // subscriptions-transport-ws calls these with positional arguments, which
+      // graphql 16 no longer supports.
+      execute: (
+        s,
+        document,
+        rootValue,
+        contextValue,
+        variableValues,
+        operationName
+      ) =>
+        execute({
+          schema: s,
+          document,
+          rootValue,
+          contextValue,
+          variableValues,
+          operationName,
+        }),
+      subscribe: (
+        s,
+        document,
+        rootValue,
+        contextValue,
+        variableValues,
+        operationName
+      ) =>
+        subscribe({
+          schema: s,
+          document,
+          rootValue,
+          contextValue,
+          variableValues,
+          operationName,
+        }),
       onConnect: onConnect(options),
       onDisconnect: onDisconnect(options),
       onOperation: onOperation(options),

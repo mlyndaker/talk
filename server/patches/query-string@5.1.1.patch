@@ -1,0 +1,12 @@
+diff --git a/index.js b/index.js
+index 10f156a434db4c4965a902cfae5237690257572a..15cfe4fe44d4fe31d3f96987d4c66b96c79df01f 100644
+--- a/index.js
++++ b/index.js
+@@ -2,6 +2,7 @@
+ var strictUriEncode = require('strict-uri-encode');
+ var objectAssign = require('object-assign');
+ var decodeComponent = require('decode-uri-component');
++decodeComponent = decodeComponent.default || decodeComponent;
+ 
+ function encoderForArrayFormat(opts) {
+ 	switch (opts.arrayFormat) {

@@ -1,4 +1,4 @@
-import createDOMPurify, { DOMPurifyI } from "dompurify";
+import createDOMPurify, { DOMPurify, WindowLike } from "dompurify";
 
 import {
   LINK_CLASSNAME,
@@ -203,7 +203,7 @@ export interface SanitizeOptions {
   /** normalize makes sure that neighboring text nodes are merged */
   normalize?: boolean;
   /** modify allows accessing the purify instance to e.g. add hooks */
-  modify?: (purify: DOMPurifyI) => void;
+  modify?: (purify: DOMPurify) => void;
   /** enable individual features. If not set, all are disabled */
   features?: RTEFeatures;
 }
@@ -219,7 +219,7 @@ export function createSanitize(
   options?: SanitizeOptions
 ): Sanitize {
   // Initializing JSDOM and DOMPurify
-  const purify = createDOMPurify(window);
+  const purify = createDOMPurify(window as unknown as WindowLike);
   const features = options?.features || {};
 
   // Setting our DOMPurify config.

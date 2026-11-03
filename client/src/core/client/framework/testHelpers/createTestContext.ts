@@ -1,10 +1,10 @@
 /* eslint-disable no-restricted-globals */
-import { IResolvers } from "@graphql-tools/utils";
 import { EventEmitter2 } from "eventemitter2";
 import FDBFactory from "fake-indexeddb/lib/FDBFactory";
 import path from "path";
 import { Environment, RecordProxy, RecordSourceProxy } from "relay-runtime";
 import sinon from "sinon";
+import { IResolvers } from "./graphqlTools";
 
 import { RequireProperty } from "coral-common/common/lib/types";
 import { CoralContext } from "coral-framework/lib/bootstrap";

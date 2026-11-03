@@ -1,19 +1,14 @@
 /* eslint-disable no-restricted-globals */
-import OptimizeCssnanoPlugin from "@intervolga/optimize-cssnano-plugin";
 import bunyan from "bunyan";
 import CaseSensitivePathsPlugin from "case-sensitive-paths-webpack-plugin";
 import CompressionPlugin from "compression-webpack-plugin";
+import CssMinimizerPlugin from "css-minimizer-webpack-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import { identity, uniq } from "lodash";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
 import path from "path";
-import WatchMissingNodeModulesPlugin from "react-dev-utils/WatchMissingNodeModulesPlugin";
 import TsconfigPathsPlugin from "tsconfig-paths-webpack-plugin";
-import webpack, {
-  Configuration,
-  DevtoolModuleFilenameTemplateInfo,
-  Plugin,
-} from "webpack";
+import webpack, { Configuration, WebpackPluginInstance } from "webpack";
 import WebpackAssetsManifest from "webpack-assets-manifest";
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
 
@@ -28,8 +23,10 @@ import paths from "./paths";
  * easy embedded ternaries.
  * @param plugins array of plugins and null values
  */
-const filterPlugins = (plugins: Array<Plugin | null>): Plugin[] =>
-  plugins.filter(identity) as Plugin[];
+type PluginEntry = NonNullable<Configuration["plugins"]>[number] | null;
+
+const filterPlugins = (plugins: PluginEntry[]): WebpackPluginInstance[] =>
+  plugins.filter(identity) as WebpackPluginInstance[];
 
 // Create the build logger.
 const logger = bunyan.createLogger({
@@ -92,12 +89,12 @@ export default function createWebpackConfig(
   /**
    * ifWatch will only include the nodes if we're in watch mode.
    */
-  const ifWatch = watch ? (...nodes: Array<Plugin | null>) => nodes : () => [];
+  const ifWatch = watch ? (...nodes: PluginEntry[]) => nodes : () => [];
 
   /**
    * ifBuild will only include the nodes if we're in build mode.
    */
-  const ifBuild = !watch ? (...nodes: Array<Plugin | null>) => nodes : () => [];
+  const ifBuild = !watch ? (...nodes: PluginEntry[]) => nodes : () => [];
 
   const localesOptions = {
     pathToLocales: paths.appLocales,
@@ -125,17 +122,16 @@ export default function createWebpackConfig(
     new MiniCssExtractPlugin({
       filename: isProduction
         ? "assets/css/[name].[contenthash].css"
-        : "assets/css/[name].[hash].css",
+        : "assets/css/[name].[fullhash].css",
       chunkFilename: isProduction
         ? "assets/css/[id].[contenthash].css"
-        : "assets/css/[id].[hash].css",
+        : "assets/css/[id].[fullhash].css",
       insert: insertLinkTag,
     }),
     ...ifBuild(
       isProduction
-        ? (new OptimizeCssnanoPlugin({
-            sourceMap: !disableSourcemaps,
-            cssnanoOptions: {
+        ? new CssMinimizerPlugin({
+            minimizerOptions: {
               preset: [
                 "default",
                 {
@@ -145,23 +141,16 @@ export default function createWebpackConfig(
                 },
               ],
             },
-          }) as Plugin)
+          })
         : null,
       // Pre-compress all the assets as they will be served as is.
       new CompressionPlugin({})
     ),
     ...ifWatch(
-      // Add module names to factory functions so they appear in browser profiler.
-      new webpack.NamedModulesPlugin(),
       // Watcher doesn't work well if you mistype casing in a path so we use
       // a plugin that prints an error when you attempt to do this.
       // See https://github.com/facebookincubator/create-react-app/issues/240
-      new CaseSensitivePathsPlugin(),
-      // If you require a missing module and then `npm install` it, you still have
-      // to restart the development server for Webpack to discover it. This plugin
-      // makes the discovery automatic so you don't have to restart.
-      // See https://github.com/facebookincubator/create-react-app/issues/186
-      new WatchMissingNodeModulesPlugin(paths.appNodeModules)
+      new CaseSensitivePathsPlugin()
     ),
   ];
 
@@ -176,12 +165,10 @@ export default function createWebpackConfig(
       "cheap-module-source-map";
 
   const baseConfig: Configuration = {
-    stats: {
-      // https://github.com/TypeStrong/ts-loader#transpileonly-boolean-defaultfalse
-      // Using transpilation only without typechecks gives warnings when we reexport types.
-      // We can ignore them here.
-      warningsFilter: /export .* was not found in/,
-    },
+    // https://github.com/TypeStrong/ts-loader#transpileonly-boolean-defaultfalse
+    // Using transpilation only without typechecks gives warnings when we reexport types.
+    // We can ignore them here.
+    ignoreWarnings: [/export .* was not found in/],
     // Set webpack mode.
     mode: isProduction ? "production" : "development",
     optimization: {
@@ -212,16 +199,14 @@ export default function createWebpackConfig(
       // There will be one main bundle, and one file per asynchronous chunk.
       filename: isProduction
         ? "assets/js/[name].[contenthash].js"
-        : "assets/js/[name].[hash].js",
+        : "assets/js/[name].[fullhash].js",
       chunkFilename: isProduction
         ? "assets/js/[name].[contenthash].chunk.js"
-        : "assets/js/[name].[hash].chunk.js",
+        : "assets/js/[name].[fullhash].chunk.js",
       // We inferred the "public path" (such as / or /my-project) from homepage.
       publicPath,
       // Point sourcemap entries to original disk location (format as URL on Windows)
-      devtoolModuleFilenameTemplate: (
-        info: DevtoolModuleFilenameTemplateInfo
-      ) =>
+      devtoolModuleFilenameTemplate: (info: { absoluteResourcePath: string }) =>
         path
           .relative(paths.appSrc, info.absoluteResourcePath)
           .replace(/\\/g, "/"),
@@ -236,6 +221,15 @@ export default function createWebpackConfig(
         }),
       ],
       alias: profilerSupport ? reactProfilerAlias : {},
+      // Some libraries import Node modules but don't use them in the browser.
+      // Tell Webpack to provide empty mocks for them so importing them works.
+      fallback: {
+        dgram: false,
+        fs: false,
+        net: false,
+        tls: false,
+        child_process: false,
+      },
     },
     resolveLoader: {
       // Add path to our own loaders.
@@ -247,6 +241,14 @@ export default function createWebpackConfig(
       // thus we can't turn on `strictExportPresence` which would turn warnings into errors.
       strictExportPresence: false,
       rules: [
+        {
+          // Allow extensionless imports (e.g. babel runtime helpers) from
+          // strict ES modules.
+          test: /\.m?js$/,
+          resolve: {
+            fullySpecified: false,
+          },
+        },
         {
           // "oneOf" will traverse all following loaders until one will
           // match the requirements. When no loader matches it will fall
@@ -367,10 +369,11 @@ export default function createWebpackConfig(
                 {
                   loader: require.resolve("postcss-loader"),
                   options: {
-                    config: {
-                      path: paths.appPostCssConfig,
+                    execute: true,
+                    postcssOptions: {
+                      config: paths.appPostCssConfig,
+                      parser: "postcss-js",
                     },
-                    parser: "postcss-js",
                   },
                 },
                 {
@@ -462,7 +465,7 @@ export default function createWebpackConfig(
                   },
                 },
                 {
-                  loader: "extract-loader",
+                  loader: path.join(__dirname, "loaders/extractLoader.js"),
                 },
                 {
                   loader: require.resolve("css-loader"),
@@ -477,8 +480,8 @@ export default function createWebpackConfig(
                 {
                   loader: require.resolve("postcss-loader"),
                   options: {
-                    config: {
-                      path: paths.appPostCssConfig,
+                    postcssOptions: {
+                      config: paths.appPostCssConfig,
                     },
                     sourceMap: !disableSourcemaps,
                   },
@@ -506,8 +509,8 @@ export default function createWebpackConfig(
                 {
                   loader: require.resolve("postcss-loader"),
                   options: {
-                    config: {
-                      path: paths.appPostCssConfig,
+                    postcssOptions: {
+                      config: paths.appPostCssConfig,
                     },
                     sourceMap: !disableSourcemaps,
                   },
@@ -524,7 +527,7 @@ export default function createWebpackConfig(
               // its runtime that would otherwise processed through "file" loader.
               // Also exclude `html` and `json` extensions so they get processed
               // by webpacks internal loaders.
-              exclude: [/\.(js|ts|tsx)$/, /\.html$/, /\.json$/],
+              exclude: [/\.(js|cjs|mjs|ts|tsx)$/, /\.html$/, /\.json$/],
               loader: require.resolve("file-loader"),
               options: {
                 // Because the resources loaded via CSS can sometimes be loaded
@@ -558,15 +561,6 @@ export default function createWebpackConfig(
       ...additionalPlugins,
       ...appendPlugins,
     ],
-    // Some libraries import Node modules but don't use them in the browser.
-    // Tell Webpack to provide empty mocks for them so importing them works.
-    node: {
-      dgram: "empty",
-      fs: "empty",
-      net: "empty",
-      tls: "empty",
-      child_process: "empty",
-    },
     // Turn off performance hints during development because we don't do any
     // splitting or minification in interest of speed. These warnings become
     // cumbersome.
@@ -575,50 +569,27 @@ export default function createWebpackConfig(
     },
   };
 
-  const devServerEntries = !watch
-    ? []
-    : [
-        // Include an alternative client for WebpackDevServer. A client's job is to
-        // connect to WebpackDevServer by a socket and get notified about changes.
-        // When you save a file, the client will either apply hot updates (in case
-        // of CSS changes), or refresh the page (in case of JS changes). When you
-        // make a syntax error, this client will display a syntax error overlay.
-        // Note: instead of the default WebpackDevServer client, we use a custom one
-        // to bring better experience for Create React App users. You can replace
-        // the line below with these two lines if you prefer the stock client:
-        // require.resolve('webpack-dev-server/client') + '?/',
-        // require.resolve('webpack/hot/dev-server'),
-        paths.appWebpackHotDevClient,
-      ];
-
   return [
     /* Webpack config for our different target, e.g. stream, admin... */
     {
       ...baseConfig,
       entry: {
-        stream: [...devServerEntries, paths.appStreamIndex],
+        stream: [paths.appStreamIndex],
         auth: [
-          ...devServerEntries,
           paths.appAuthIndex,
           // Remove deactivated entries.
         ],
-        install: [...devServerEntries, paths.appInstallIndex],
-        account: [...devServerEntries, paths.appAccountIndex],
-        admin: [...devServerEntries, paths.appAdminIndex],
+        install: [paths.appInstallIndex],
+        account: [paths.appAccountIndex],
+        admin: [paths.appAdminIndex],
       },
       output: {
         ...baseConfig.output,
-        // Each config needs a unique jsonpFunction name to avoid collisions of chunks.
-        jsonpFunction: "coralWebpackJsonp",
+        // Each config needs a unique chunkLoadingGlobal name to avoid collisions of chunks.
+        chunkLoadingGlobal: "coralWebpackJsonp",
       },
       plugins: filterPlugins([
         ...baseConfig.plugins!,
-        ...ifWatch(
-          // This is necessary to emit hot updates
-          new webpack.HotModuleReplacementPlugin({
-            multiStep: true,
-          })
-        ),
         new WebpackAssetsManifest({
           output: "asset-manifest.json",
           entrypoints: true,
@@ -642,8 +613,8 @@ export default function createWebpackConfig(
       entry: [paths.appEmbedIndex],
       output: {
         ...baseConfig.output,
-        // Each config needs a unique jsonpFunction name to avoid collisions of chunks.
-        jsonpFunction: "coralEmbedWebpackJsonp",
+        // Each config needs a unique chunkLoadingGlobal name to avoid collisions of chunks.
+        chunkLoadingGlobal: "coralEmbedWebpackJsonp",
         library: "Coral",
         // don't hash the embed, cache-busting must be completed by the requester
         // as this lives in a static template on the embed site.
@@ -702,8 +673,8 @@ export default function createWebpackConfig(
       entry: [paths.appCountIndex],
       output: {
         ...baseConfig.output,
-        // Each config needs a unique jsonpFunction name to avoid collisions of chunks.
-        jsonpFunction: "coralCountWebpackJsonp",
+        // Each config needs a unique chunkLoadingGlobal name to avoid collisions of chunks.
+        chunkLoadingGlobal: "coralCountWebpackJsonp",
         // don't hash the count, cache-busting must be completed by the requester
         // as this lives in a static template on the embed site.
         filename: "assets/js/count.js",
@@ -740,8 +711,8 @@ export default function createWebpackConfig(
       },
       output: {
         ...baseConfig.output,
-        // Each config needs a unique jsonpFunction name to avoid collisions of chunks.
-        jsonpFunction: "coralFrameWebpackJsonp",
+        // Each config needs a unique chunkLoadingGlobal name to avoid collisions of chunks.
+        chunkLoadingGlobal: "coralFrameWebpackJsonp",
       },
       entry: {
         frame: [paths.appFrameIndex],
@@ -771,8 +742,8 @@ export default function createWebpackConfig(
       entry: [paths.appOEmbedIndex],
       output: {
         ...baseConfig.output,
-        // Each config needs a unique jsonpFunction name to avoid collisions of chunks.
-        jsonpFunction: "coralCommentEmbedWebpackJsonp",
+        // Each config needs a unique chunkLoadingGlobal name to avoid collisions of chunks.
+        chunkLoadingGlobal: "coralCommentEmbedWebpackJsonp",
         // don't hash the count, cache-busting must be completed by the requester
         // as this lives in a static template on the embed site.
         filename: "assets/js/commentEmbed.js",

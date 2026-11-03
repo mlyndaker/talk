@@ -18,6 +18,8 @@
       "coral-oembed/*": ["./oembed/*"],
       "coral-ui/*": ["./ui/*"],
       "coral-test/*": ["./test/*"],
+      "webpack": ["../../types/shims/webpack.d.ts"],
+      "webpack-dev-server": ["../../types/shims/webpack-dev-server.d.ts"],
     }
   },
   "include": ["./**/*", "../../types/**/*.d.ts"],

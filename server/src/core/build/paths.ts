@@ -54,6 +54,4 @@ export default {
   appPublic: resolveApp("public"),
   appPackageJson: resolveApp("package.json"),
   appNodeModules: resolveApp("node_modules"),
-
-  appWebpackHotDevClient: resolveApp("scripts/webpackHotDevClient.js"),
 };

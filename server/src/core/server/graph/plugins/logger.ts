@@ -1,4 +1,4 @@
-import { ApolloServerPlugin } from "apollo-server-plugin-base";
+import { ApolloServerPlugin } from "@apollo/server";
 import { DocumentNode, GraphQLFormattedError } from "graphql";
 
 import GraphContext from "coral-server/graph/context";
@@ -7,6 +7,7 @@ import logger from "coral-server/logger";
 import { ErrorReporterScope } from "coral-server/services/errors";
 
 import {
+  getFormattedErrors,
   getOperationMetadata,
   getOriginalError,
   getPersistedQueryMetadata,
@@ -110,22 +111,27 @@ export function logQuery(
 }
 
 export const LoggerApolloServerPlugin: ApolloServerPlugin<GraphContext> = {
-  requestDidStart() {
+  async requestDidStart() {
     return {
-      willSendResponse({ response, context }) {
-        if (response.errors) {
+      async willSendResponse(requestContext) {
+        const { contextValue: context } = requestContext;
+        const errors = getFormattedErrors(requestContext);
+
+        if (errors) {
           // Log out the errors on this request.
-          response.errors.forEach((err) => logAndReportError(context, err));
+          errors.forEach((err) => logAndReportError(context, err));
         }
       },
-      executionDidStart({ document, context }) {
+      async executionDidStart({ document, contextValue: context }) {
         // Grab the start time so we can calculate the time it takes to execute
         // the graph query.
         const timer = createTimer();
 
-        return function executionDidEnd() {
-          // Log out the details of this request.
-          logQuery(context, document, context.persisted, timer());
+        return {
+          async executionDidEnd() {
+            // Log out the details of this request.
+            logQuery(context, document, context.persisted, timer());
+          },
         };
       },
     };

@@ -1,4 +1,3 @@
-import { IResolvers } from "@graphql-tools/utils";
 import { graphql, GraphQLSchema, parse } from "graphql";
 import {
   CacheConfig,
@@ -18,6 +17,7 @@ import {
   UploadableMap,
   Variables,
 } from "relay-runtime";
+import { IResolvers } from "./graphqlTools";
 
 import {
   InvalidRequestError,

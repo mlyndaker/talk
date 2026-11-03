@@ -1,13 +1,13 @@
-import { ApolloServerPlugin } from "apollo-server-plugin-base";
+import { ApolloServerPlugin } from "@apollo/server";
 
 import { markSeenCommentsBulk } from "coral-server/models/seenComments/seenComments";
 
 import GraphContext from "../context";
 
 export const CommentSeenServerPlugin: ApolloServerPlugin<GraphContext> = {
-  requestDidStart() {
+  async requestDidStart() {
     return {
-      willSendResponse({ context }) {
+      async willSendResponse({ contextValue: context }) {
         process.nextTick(() => {
           markSeenCommentsBulk(
             context.mongo,

@@ -8,6 +8,8 @@
 const plugins =
   process.env.WEBPACK === "true"
     ? [
+        // uuid >= 11 ships logical assignment operators that webpack 4 can't parse.
+        "@babel/plugin-transform-logical-assignment-operators",
         "use-lodash-es",
         "lodash",
         [

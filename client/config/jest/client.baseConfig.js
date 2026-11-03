@@ -38,6 +38,7 @@ const createConfig = () => {
     "react-relay-network-modern|@5.0.0_relay-runtime@10.0.1/react-relay-network-modern",
     "@coralproject/rte|@2.2.4_react-dom@18.2.0_react@18.2.0/@coralproject/rte",
     "internmap|@2.0.3/internmap/src",
+    "decode-uri-component",
   ];
 
   return {

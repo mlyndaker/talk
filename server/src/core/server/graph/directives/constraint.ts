@@ -1,53 +1,64 @@
-import { SchemaDirectiveVisitor } from "@graphql-tools/utils";
-import {
-  defaultFieldResolver,
-  GraphQLArgument,
-  GraphQLField,
-  GraphQLInterfaceType,
-  GraphQLObjectType,
-} from "graphql";
+import { getDirective, MapperKind, mapSchema } from "@graphql-tools/utils";
+import { defaultFieldResolver, GraphQLSchema } from "graphql";
 import { isFinite, isNumber } from "lodash";
 
-export default class extends SchemaDirectiveVisitor {
-  private validate(value: any) {
-    // If the value to validate is not a number, then we can't validate it!
-    if (!isNumber(value)) {
-      return;
-    }
+export interface ConstraintDirectiveArgs {
+  min?: number;
+  max?: number;
+}
 
-    // Ensure that the value is finite.
-    if (!isFinite(value)) {
-      throw new Error("not finite");
-    }
-
-    // Apply min validation.
-    if (isNumber(this.args.min) && value < this.args.min) {
-      throw new Error("too short");
-    }
-
-    // Apply max validation.
-    if (isNumber(this.args.max) && value > this.args.max) {
-      throw new Error("too long");
-    }
+function validate(value: any, { min, max }: ConstraintDirectiveArgs) {
+  // If the value to validate is not a number, then we can't validate it!
+  if (!isNumber(value)) {
+    return;
   }
 
-  public visitArgumentDefinition(
-    argument: GraphQLArgument,
-    details: {
-      field: GraphQLField<any, any>;
-      objectType: GraphQLObjectType | GraphQLInterfaceType;
-    }
-  ) {
-    const originalResolver = details.field.resolve || defaultFieldResolver;
-    details.field.resolve = (...resolveArgs) => {
-      const argName = argument.name;
-      const args = resolveArgs[1]; // (parent, args, context, info)
-      const valueToValidate = args[argName];
-
-      // Validate the value.
-      this.validate(valueToValidate);
-
-      return originalResolver.apply(this, resolveArgs);
-    };
+  // Ensure that the value is finite.
+  if (!isFinite(value)) {
+    throw new Error("not finite");
   }
+
+  // Apply min validation.
+  if (isNumber(min) && value < min) {
+    throw new Error("too short");
+  }
+
+  // Apply max validation.
+  if (isNumber(max) && value > max) {
+    throw new Error("too long");
+  }
+}
+
+/**
+ * Applies the `@constraint` directive to field arguments, validating them
+ * before the field is resolved.
+ */
+export default function applyConstraintDirective(schema: GraphQLSchema) {
+  return mapSchema(schema, {
+    [MapperKind.COMPOSITE_FIELD]: (fieldConfig) => {
+      const constraints = Object.entries(fieldConfig.args || {})
+        .map(([argName, argConfig]) => ({
+          argName,
+          args: getDirective(schema, argConfig, "constraint")?.[0] as
+            | ConstraintDirectiveArgs
+            | undefined,
+        }))
+        .filter(({ args }) => args);
+      if (constraints.length === 0) {
+        return fieldConfig;
+      }
+
+      const originalResolver = fieldConfig.resolve || defaultFieldResolver;
+      return {
+        ...fieldConfig,
+        resolve(source, args, context, info) {
+          for (const constraint of constraints) {
+            validate(args[constraint.argName], constraint.args!);
+          }
+
+          return originalResolver(source, args, context, info);
+        },
+      };
+    },
+  });
 }

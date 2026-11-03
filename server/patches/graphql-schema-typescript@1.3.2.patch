@@ -1,6 +1,8 @@
+diff --git a/lib/index.js b/lib/index.js
+index ca47440a44612d3103c6210ea0bf984ebd4807f6..c2f611269a95c03faeb1eb17c638beff64f3cad3 100644
 --- a/lib/index.js
 +++ b/lib/index.js
-@@ -74,7 +74,7 @@
+@@ -74,7 +74,7 @@ exports.generateTSTypesAsString = function (schema, outputPath, options) { retur
          switch (_b.label) {
              case 0:
                  mergedOptions = __assign({}, types_1.defaultOptions, options);
@@ -9,3 +11,16 @@
                  _b.label = 1;
              case 1:
                  _b.trys.push([1, 4, , 5]);
+diff --git a/lib/utils.js b/lib/utils.js
+index 38e6e076df6406a3ee03f96245a320091ae62839..d165dce8bf37f733d8f3cecfa35935b19de5fde1 100644
+--- a/lib/utils.js
++++ b/lib/utils.js
+@@ -47,7 +47,7 @@ exports.introspectSchema = function (schema) { return __awaiter(_this, void 0, v
+     var _a, data, errors;
+     return __generator(this, function (_b) {
+         switch (_b.label) {
+-            case 0: return [4 /*yield*/, graphql_1.graphql(schema, graphql_1.introspectionQuery)];
++            case 0: return [4 /*yield*/, graphql_1.graphql({ schema: schema, source: graphql_1.getIntrospectionQuery() })];
+             case 1:
+                 _a = _b.sent(), data = _a.data, errors = _a.errors;
+                 if (errors) {

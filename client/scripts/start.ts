@@ -54,13 +54,17 @@ const webpackConfig = createWebpackConfig(config, { watch: true });
 
 const devSocket = {
   warnings: (warnings: any) =>
-    (devServer as any).sockWrite(
-      (devServer as any).sockets,
+    (devServer as any).sendMessage(
+      (devServer as any).webSocketServer.clients,
       "warnings",
       warnings
     ),
   errors: (errors: any) =>
-    (devServer as any).sockWrite((devServer as any).sockets, "errors", errors),
+    (devServer as any).sendMessage(
+      (devServer as any).webSocketServer.clients,
+      "errors",
+      errors
+    ),
 };
 
 // Create a webpack compiler that is configured with custom messages.
@@ -80,16 +84,19 @@ const serverConfig = createDevServerConfig({
   allowedHost: urls.lanUrlForConfig,
   serverPort: SERVER_PORT,
   devPort: PORT,
-  publicPath: webpackConfig[0].output!.publicPath!,
+  publicPath: webpackConfig[0].output!.publicPath as string,
 });
 
 // Disable the host check on the dev server as this is used exclusively for
 // development and not in production.
-serverConfig.disableHostCheck = true;
+serverConfig.allowedHosts = "all";
 
-const devServer = new WebpackDevServer(compiler, serverConfig);
+const devServer = new WebpackDevServer(
+  { ...serverConfig, host: HOST, port: PORT },
+  compiler
+);
 // Launch WebpackDevServer.
-devServer.listen(PORT, HOST, (err: Error) => {
+devServer.startCallback((err?: Error) => {
   if (err) {
     return console.log(err);
   }
@@ -100,7 +107,6 @@ devServer.listen(PORT, HOST, (err: Error) => {
 ["SIGINT", "SIGTERM"].forEach((sig: any) => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
   process.once(sig, () => {
-    devServer.close();
-    process.exit();
+    void devServer.stop().then(() => process.exit());
   });
 });

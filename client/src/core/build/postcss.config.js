@@ -1,4 +1,8 @@
-require("ts-node/register");
+// The build scripts may already run under ts-node; registering it twice would
+// type check the already transpiled output.
+if (!process[Symbol.for("ts-node.register.instance")]) {
+  require("ts-node/register");
+}
 
 const kebabCase = require("lodash/kebabCase");
 const mapKeys = require("lodash/mapKeys");
@@ -11,7 +15,6 @@ const postcssPresetEnv = require("postcss-preset-env");
 const postcssNested = require("postcss-nested");
 const postcssImport = require("postcss-import");
 const postcssMixins = require("postcss-mixins");
-const postcssPrependImports = require("postcss-prepend-imports");
 const postcssAdvancedVariables = require("postcss-advanced-variables");
 
 delete require.cache[paths.appSassLikeVariables];
@@ -21,6 +24,25 @@ const kebabs = mapKeys(
   mapValues(flat(sassLikeVariables, { delimiter: "-" }), (v) => v.toString()),
   (_, k) => kebabCase(k)
 );
+
+// Prepends `@import` rules for the given files to every CSS stylesheet.
+// postcss-import parses imported files with the importer's parser, so the
+// `.css.ts` (postcss-js) stylesheets must not import plain CSS files.
+const prependImports = (files) => ({
+  postcssPlugin: "prepend-imports",
+  Once(root, { AtRule, result }) {
+    const { from } = result.opts;
+    if (from && from.endsWith(".css.ts")) {
+      return;
+    }
+    files
+      .slice()
+      .reverse()
+      .forEach((file) =>
+        root.prepend(new AtRule({ name: "import", params: `"${file}"` }))
+      );
+  },
+});
 
 // Generate sass-style variables to inject into css
 const postCssVariables = mapValues(kebabs, (value, key) => {
@@ -38,15 +60,9 @@ const postCssVariables = mapValues(kebabs, (value, key) => {
 });
 
 module.exports = {
-  // Necessary for external CSS imports to work
-  // https://github.com/facebookincubator/create-react-app/issues/2677
-  ident: "postcss",
   plugins: [
     // This allows us to define dynamic css variables.
-    postcssPrependImports({
-      path: "",
-      files: [paths.appThemeMixinsCSS],
-    }),
+    prependImports([paths.appThemeMixinsCSS]),
     // Needed by above plugin.
     postcssImport(),
     // Support mixins.

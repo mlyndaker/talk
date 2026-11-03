@@ -10,11 +10,10 @@ export default new GraphQLScalarType({
       return value;
     }
 
-    return value.toISOString();
+    return (value as Date).toISOString();
   },
   parseValue(value) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    return new Date(value);
+    return new Date(value as string | number);
   },
   parseLiteral(ast) {
     switch (ast.kind) {

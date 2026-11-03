@@ -1,0 +1,13 @@
+diff --git a/utils/getOptions.js b/utils/getOptions.js
+index e42b82ef41a67624dd27b9e2c88d9f9170c16c6e..97a519071885768621029fac7b61e9adb3c9bcb4 100644
+--- a/utils/getOptions.js
++++ b/utils/getOptions.js
+@@ -2,7 +2,7 @@
+ 
+ const path = require('path');
+ const fs = require('fs');
+-const uuid = require('uuid/v1');
++const uuid = require('uuid').v1;
+ 
+ const constants = require('../constants/index');
+ 

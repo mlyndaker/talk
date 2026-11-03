@@ -58,8 +58,8 @@ export const klipySearchHandler =
     }
 
     const result = schema.validate(req.query);
-    if (result.error || result.errors) {
-      res.status(400).send(result.error ?? result.errors);
+    if (result.error) {
+      res.status(400).send(result.error);
       return;
     }
 
