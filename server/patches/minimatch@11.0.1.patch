@@ -1,0 +1,27 @@
+diff --git a/dist/commonjs/index.js b/dist/commonjs/index.js
+index ec1981d9a738ecf28d63190e27506ff0e600bf79..e3765067522f1f8327db6a79754dd7e7c7b2d92d 100644
+--- a/dist/commonjs/index.js
++++ b/dist/commonjs/index.js
+@@ -1510,3 +1510,22 @@ exports.minimatch.Minimatch = Minimatch;
+ exports.minimatch.escape = escape_js_1.escape;
+ exports.minimatch.unescape = unescape_js_1.unescape;
+ //# sourceMappingURL=index.js.map
++
++// Compatibility for legacy consumers (e.g. glob 7) of the minimatch 3 API,
++// which expect pattern parts to be RegExps with a `_glob` property.
++Object.defineProperties(nonrecursive_glob_match_1.Matcher.prototype, {
++    _glob: {
++        configurable: true,
++        get() {
++            return this.pattern;
++        },
++    },
++    [Symbol.match]: {
++        configurable: true,
++        value(str) {
++            return this.test(str) ? [str] : null;
++        },
++    },
++});
++// Allow legacy CommonJS consumers to call require("minimatch") directly.
++module.exports = Object.assign(exports.minimatch, exports);

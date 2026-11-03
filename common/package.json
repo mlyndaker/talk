@@ -13,8 +13,8 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@types/babel__core": "7.1.18",
     "@babel/runtime-corejs3": "^7.10.3",
+    "@types/babel__core": "7.1.18",
     "@types/babel__traverse": "7.14.2",
     "@types/he": "^1.1.1",
     "@types/jest": "^26.0.13",
@@ -60,13 +60,14 @@
       "js-yaml@>=3.0.0 <3.15.2": "^3.15.2",
       "lodash@>=4.0.0 <4.18.1": "^4.18.1",
       "micromatch@>=3.0.0 <4.0.8": "^4.0.8",
-      "minimatch@<3.1.4": "^3.1.4",
-      "minimatch@>=5.0.0 <5.1.8": "^5.1.8",
-      "minimatch@>=9.0.0 <9.0.7": "^9.0.7",
+      "minimatch@<11.0.1": "^11.0.1",
       "picomatch@>=2.0.0 <2.3.2": "^2.3.2",
       "re2": "1.27.0",
       "uuid@>=8.0.0 <11.1.1": "^11.1.1",
       "ws@>=7.0.0 <7.5.11": "^7.5.11"
+    },
+    "patchedDependencies": {
+      "minimatch@11.0.4": "patches/minimatch@11.0.4.patch"
     }
   }
 }

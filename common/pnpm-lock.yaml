@@ -19,13 +19,16 @@ overrides:
   js-yaml@>=3.0.0 <3.15.2: ^3.15.2
   lodash@>=4.0.0 <4.18.1: ^4.18.1
   micromatch@>=3.0.0 <4.0.8: ^4.0.8
-  minimatch@<3.1.4: ^3.1.4
-  minimatch@>=5.0.0 <5.1.8: ^5.1.8
-  minimatch@>=9.0.0 <9.0.7: ^9.0.7
+  minimatch@<11.0.1: ^11.0.1
   picomatch@>=2.0.0 <2.3.2: ^2.3.2
   re2: 1.27.0
   uuid@>=8.0.0 <11.1.1: ^11.1.1
   ws@>=7.0.0 <7.5.11: ^7.5.11
+
+patchedDependencies:
+  minimatch@11.0.4:
+    hash: 6wl74ozswguldtcbpu3z2c4xvy
+    path: patches/minimatch@11.0.4.patch
 
 dependencies:
   coral-config:
@@ -504,6 +507,10 @@ packages:
     engines: {node: '>=18.0.0'}
     dependencies:
       minipass: 7.1.2
+    dev: false
+
+  /@isaacs/nonrecursive-glob-match@1.0.3:
+    resolution: {integrity: sha512-SI7kyKHq4XXDRozw+r9GlRZkia1ZkFrpLW98r2IC2Bpr8YkFGE3fvjzmxCG0x78A++69HmDNrDvSMYBZmHGpKA==}
     dev: false
 
   /@istanbuljs/load-nyc-config@1.1.0:
@@ -1076,8 +1083,9 @@ packages:
       babel-preset-current-node-syntax: 1.1.0(@babel/core@7.29.6)
     dev: false
 
-  /balanced-match@1.0.2:
-    resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
+  /balanced-match@4.0.4:
+    resolution: {integrity: sha512-BLrgEcRTwX2o6gGxGOCNyMvGSp35YofuYzw9h1IMTRmKqttAZZVU67bdb9Pr2vUHA8+j3i2tJfjO6C6+4myGTA==}
+    engines: {node: 18 || 20 || >=22}
     dev: false
 
   /baseline-browser-mapping@2.11.35:
@@ -1090,11 +1098,11 @@ packages:
     resolution: {integrity: sha512-vyL2OymJxmarO8gxMr0mhChsO9QGwhynfuu4+MHTAW6czfq9humCB7rKpUjDd9YUiDPU4mzpyupFSvOClAwbmQ==}
     dev: false
 
-  /brace-expansion@1.1.21:
-    resolution: {integrity: sha512-9zeA+KLZNNzglF2TPKRQEDyx6Yby7daAkuy8MiPzpXPsYDWi/DRM8jmwUDxokQjYqBpv5DgPiwD4h4ZZSy1Ujw==}
+  /brace-expansion@5.0.12:
+    resolution: {integrity: sha512-YovQ3rzhaLMIrDjNDMkNS01tea93qhEhG5xy8f6+R0l+dw3Ki+5sCoIoI942iuLZTHWogWktgwVDhU09iNEimQ==}
+    engines: {node: 20 || >=22}
     dependencies:
-      balanced-match: 1.0.2
-      concat-map: 0.0.1
+      balanced-match: 4.0.4
     dev: false
 
   /braces@3.0.3:
@@ -1239,10 +1247,6 @@ packages:
     engines: {node: '>= 0.8'}
     dependencies:
       delayed-stream: 1.0.0
-    dev: false
-
-  /concat-map@0.0.1:
-    resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
     dev: false
 
   /convert-source-map@1.9.0:
@@ -1676,7 +1680,7 @@ packages:
       fs.realpath: 1.0.0
       inflight: 1.0.6
       inherits: 2.0.4
-      minimatch: 3.1.5
+      minimatch: 11.0.4(patch_hash=6wl74ozswguldtcbpu3z2c4xvy)
       once: 1.4.0
       path-is-absolute: 1.0.1
     dev: false
@@ -2581,11 +2585,14 @@ packages:
     engines: {node: '>=6'}
     dev: false
 
-  /minimatch@3.1.5:
-    resolution: {integrity: sha512-VgjWUsnnT6n+NUk6eZq77zeFdpW2LWDzP6zFGrCbHXiYNul5Dzqk2HHQ5uFH2DNW5Xbp8+jVzaeNt94ssEEl4w==}
+  /minimatch@11.0.4(patch_hash=6wl74ozswguldtcbpu3z2c4xvy):
+    resolution: {integrity: sha512-/UJ1dEoVQTjPNDh6SGlUo+ueLMmoHTas4q+8yaAR/5t6nLAIiBDJtoYUh20IYleix7ehiQkgczb84PE3uzHkxg==}
+    engines: {node: 20 || >=22}
     dependencies:
-      brace-expansion: 1.1.21
+      '@isaacs/nonrecursive-glob-match': 1.0.3
+      brace-expansion: 5.0.12
     dev: false
+    patched: true
 
   /minimist@1.2.8:
     resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
@@ -3216,7 +3223,7 @@ packages:
     dependencies:
       '@istanbuljs/schema': 0.1.3
       glob: 7.2.3
-      minimatch: 3.1.5
+      minimatch: 11.0.4(patch_hash=6wl74ozswguldtcbpu3z2c4xvy)
     dev: false
 
   /throat@5.0.0:
