@@ -127,12 +127,21 @@ patchedDependencies:
   is-svg@4.3.0:
     hash: 5h2jo6zyyk3qq432nc4btkgafy
     path: patches/is-svg@4.3.0.patch
+  jest-junit@11.1.0:
+    hash: 5rrg6v2shrt4molw4fxmct57ze
+    path: patches/jest-junit@11.1.0.patch
   query-string@5.1.1:
     hash: dr7xdxoaqssavbfgnknqalhttu
     path: patches/query-string@5.1.1.patch
+  request@2.88.2:
+    hash: v53532s3mywui7ocmzpvapvcou
+    path: patches/request@2.88.2.patch
   source-map-resolve@0.5.2:
     hash: wl3ms6bfcbdegzaqewrpglp6xm
     path: patches/source-map-resolve@0.5.2.patch
+  webpack-log@2.0.0:
+    hash: hzfdmrrirta4lmg7gcqn24xrs4
+    path: patches/webpack-log@2.0.0.patch
 
 dependencies:
   '@ampproject/toolbox-cache-url':
@@ -628,7 +637,7 @@ devDependencies:
     version: 2.5.2
   jest-junit:
     specifier: ^11.1.0
-    version: 11.1.0
+    version: 11.1.0(patch_hash=5rrg6v2shrt4molw4fxmct57ze)
   jest-localstorage-mock:
     specifier: ^2.4.3
     version: 2.4.3
@@ -11988,7 +11997,7 @@ packages:
       - utf-8-validate
     dev: true
 
-  /jest-junit@11.1.0:
+  /jest-junit@11.1.0(patch_hash=5rrg6v2shrt4molw4fxmct57ze):
     resolution: {integrity: sha512-c2LFOyKY7+ZxL5zSu+WHmHfsJ2wqbOpeYJ4Uu26yMhFxny2J2NQj6AVS7M+Eaxji9Q/oIDDK5tQy0DGzDp9xOw==}
     engines: {node: '>=10.12.0'}
     dependencies:
@@ -11997,6 +12006,7 @@ packages:
       uuid: 11.1.1
       xml: 1.0.1
     dev: true
+    patched: true
 
   /jest-leak-detector@26.4.2:
     resolution: {integrity: sha512-akzGcxwxtE+9ZJZRW+M2o+nTNnmQZxrHJxX/HjgDaU5+PLmY1qnQPnMjgADPGCRPhB+Yawe1iij0REe+k/aHoA==}
@@ -16361,7 +16371,7 @@ packages:
     engines: {node: '>= 0.8.x'}
     dev: true
 
-  /request@2.88.2:
+  /request@2.88.2(patch_hash=v53532s3mywui7ocmzpvapvcou):
     resolution: {integrity: sha512-MsvtOrfG9ZcrOwAW+Qi+F6HbD0CWXEh9ou77uOb7FM2WPhwT7smM833PzanhJLsgXjN89Ir6V2PczXNnMpwKhw==}
     engines: {node: '>= 6'}
     deprecated: request has been deprecated, see https://github.com/request/request/issues/3142
@@ -16387,6 +16397,7 @@ packages:
       tunnel-agent: 0.6.0
       uuid: 11.1.1
     dev: true
+    patched: true
 
   /requestidlecallback@0.3.0:
     resolution: {integrity: sha512-TWHFkT7S9p7IxLC5A1hYmAYQx2Eb9w1skrXmQ+dS1URyvR8tenMLl4lHbqEOUnpEYxNKpkVMXUgknVpBZWXXfQ==}
@@ -18709,7 +18720,7 @@ packages:
     resolution: {integrity: sha512-4AoH4pxuSvHCjqLO04sU6U/uE65BYza8l/KKBS0b0hnUPWi+cQ2BpeTEwejCSx9SPV5/U03nniDTrWx5NrmKdw==}
     dependencies:
       lru-cache: 4.1.5
-      request: 2.88.2
+      request: 2.88.2(patch_hash=v53532s3mywui7ocmzpvapvcou)
       semver: 5.7.3
       tmp: 0.2.7
       yamlparser: 0.0.2
@@ -19040,7 +19051,7 @@ packages:
       mkdirp: 0.5.5
       range-parser: 1.2.1
       webpack: 4.46.0(webpack-cli@3.3.12)
-      webpack-log: 2.0.0
+      webpack-log: 2.0.0(patch_hash=hzfdmrrirta4lmg7gcqn24xrs4)
     dev: true
 
   /webpack-dev-server@3.11.3(webpack-cli@3.3.12)(webpack@4.46.0):
@@ -19086,7 +19097,7 @@ packages:
       webpack: 4.46.0(webpack-cli@3.3.12)
       webpack-cli: 3.3.12(webpack@4.46.0)
       webpack-dev-middleware: 3.7.3(webpack@4.46.0)
-      webpack-log: 2.0.0
+      webpack-log: 2.0.0(patch_hash=hzfdmrrirta4lmg7gcqn24xrs4)
       ws: 6.2.4
       yargs: 13.3.2
     transitivePeerDependencies:
@@ -19094,13 +19105,14 @@ packages:
       - utf-8-validate
     dev: true
 
-  /webpack-log@2.0.0:
+  /webpack-log@2.0.0(patch_hash=hzfdmrrirta4lmg7gcqn24xrs4):
     resolution: {integrity: sha512-cX8G2vR/85UYG59FgkoMamwHUIkSSlV3bBMRsbxVXVUk2j6NleCKjQ/WE9eYg9WY4w25O9w8wKP4rzNZFmUcUg==}
     engines: {node: '>= 6'}
     dependencies:
       ansi-colors: 3.2.4
       uuid: 11.1.1
     dev: true
+    patched: true
 
   /webpack-sources@1.4.3:
     resolution: {integrity: sha512-lgTS3Xhv1lCOKo7SA5TjKXMjpSM4sBjNV5+q2bqesbSPs5FjGmU6jjtBSkX9b4qW87vDIsCIlUPOEhbZrMdjeQ==}

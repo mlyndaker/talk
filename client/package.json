@@ -436,7 +436,10 @@
     "patchedDependencies": {
       "query-string@5.1.1": "patches/query-string@5.1.1.patch",
       "source-map-resolve@0.5.2": "patches/source-map-resolve@0.5.2.patch",
-      "is-svg@4.3.0": "patches/is-svg@4.3.0.patch"
+      "is-svg@4.3.0": "patches/is-svg@4.3.0.patch",
+      "request@2.88.2": "patches/request@2.88.2.patch",
+      "jest-junit@11.1.0": "patches/jest-junit@11.1.0.patch",
+      "webpack-log@2.0.0": "patches/webpack-log@2.0.0.patch"
     }
   },
   "dependencies-pins-documentation": {
