@@ -1,11 +1,11 @@
 import cn from "classnames";
+import EasyMDE from "easymde";
 import React, {
   ChangeEvent,
   FunctionComponent,
   useEffect,
   useState,
 } from "react";
-import SimpleMDE from "simplemde";
 
 import { useGetMessage } from "coral-framework/lib/i18n";
 import { PropTypesOf } from "coral-ui/types";
@@ -63,19 +63,19 @@ const MarkdownEditor: FunctionComponent<Props> = ({
   const toolbarDefault = [
     {
       name: "bold",
-      action: SimpleMDE.toggleBold,
+      action: EasyMDE.toggleBold,
       className: styles.iconBold,
       title: getMessage("framework-markdownEditor-bold", "Bold"),
     },
     {
       name: "italic",
-      action: SimpleMDE.toggleItalic,
+      action: EasyMDE.toggleItalic,
       className: styles.iconItalic,
       title: getMessage("framework-markdownEditor-italic", "Italic"),
     },
     {
       name: "title",
-      action: SimpleMDE.toggleHeadingSmaller,
+      action: EasyMDE.toggleHeadingSmaller,
       className: styles.iconTitle,
       title: getMessage(
         "framework-markdownEditor-titleSubtitleHeading",
@@ -85,19 +85,19 @@ const MarkdownEditor: FunctionComponent<Props> = ({
     "|",
     {
       name: "quote",
-      action: SimpleMDE.toggleBlockquote,
+      action: EasyMDE.toggleBlockquote,
       className: styles.iconQuote,
       title: getMessage("framework-markdownEditor-quote", "Quote"),
     },
     {
       name: "unordered-list",
-      action: SimpleMDE.toggleUnorderedList,
+      action: EasyMDE.toggleUnorderedList,
       className: styles.iconUnorderedList,
       title: getMessage("framework-markdownEditor-genericList", "Generic List"),
     },
     {
       name: "ordered-list",
-      action: SimpleMDE.toggleOrderedList,
+      action: EasyMDE.toggleOrderedList,
       className: styles.iconOrderedList,
       title: getMessage(
         "framework-markdownEditor-numberedList",
@@ -107,20 +107,20 @@ const MarkdownEditor: FunctionComponent<Props> = ({
     "|",
     {
       name: "link",
-      action: SimpleMDE.drawLink,
+      action: EasyMDE.drawLink,
       className: styles.iconLink,
       title: getMessage("framework-markdownEditor-createLink", "Create Link"),
     },
     {
       name: "image",
-      action: SimpleMDE.drawImage,
+      action: EasyMDE.drawImage,
       className: styles.iconImage,
       title: getMessage("framework-markdownEditor-insertImage", "Insert Image"),
     },
     "|",
     {
       name: "preview",
-      action: SimpleMDE.togglePreview,
+      action: EasyMDE.togglePreview,
       className: cn(styles.iconPreview, "no-disable"),
       title: getMessage(
         "framework-markdownEditor-togglePreview",
@@ -129,7 +129,7 @@ const MarkdownEditor: FunctionComponent<Props> = ({
     },
     {
       name: "side-by-side",
-      action: SimpleMDE.toggleSideBySide,
+      action: EasyMDE.toggleSideBySide,
       className: cn(styles.iconSideBySide, "no-disable"),
       title: getMessage(
         "framework-markdownEditor-toggleSideBySide",
@@ -138,7 +138,7 @@ const MarkdownEditor: FunctionComponent<Props> = ({
     },
     {
       name: "fullscreen",
-      action: SimpleMDE.toggleFullScreen,
+      action: EasyMDE.toggleFullScreen,
       className: cn(styles.iconFullscreen, "no-disable"),
       title: getMessage(
         "framework-markdownEditor-toggleFullscreen",
@@ -182,7 +182,7 @@ const MarkdownEditor: FunctionComponent<Props> = ({
   };
 
   const [textarea, setTextarea] = useState<HTMLTextAreaElement | null>(null);
-  const [editor, setEditor] = useState<SimpleMDE | null>(null);
+  const [editor, setEditor] = useState<EasyMDE | null>(null);
 
   const onRef = (ref: HTMLTextAreaElement) => {
     if (ref) {
@@ -192,11 +192,11 @@ const MarkdownEditor: FunctionComponent<Props> = ({
 
   useEffect(() => {
     if (textarea) {
-      const editorSetup = new SimpleMDE({
+      const editorSetup = new EasyMDE({
         ...config,
         element: textarea,
         autofocus: autoFocus,
-      });
+      } as EasyMDE.Options);
       // Don't trap the key, to stay accessible.
       editorSetup.codemirror.options.extraKeys.Tab = false;
       editorSetup.codemirror.options.extraKeys["Shift-Tab"] = false;

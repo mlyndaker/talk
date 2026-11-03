@@ -493,7 +493,7 @@ export default function createWebpackConfig(
                   },
                 },
                 {
-                  loader: "extract-loader",
+                  loader: path.join(__dirname, "loaders/extractLoader.js"),
                 },
                 {
                   loader: require.resolve("css-loader"),
